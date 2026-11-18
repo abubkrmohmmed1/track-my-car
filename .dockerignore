@@ -1,0 +1,6 @@
+.git
+.gitignore
+*.docx
+extracted_doc.txt
+sessions/*
+cache/*

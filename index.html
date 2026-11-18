@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track My Car (TMC) - المنظومة الوطنية لتتبع واستعادة المركبات</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container navbar">
+            <a href="/index.html" class="logo">
+                <span class="logo-badge">TMC</span>
+                <div class="logo-text">
+                    <span class="logo-title">Track My Car</span>
+                    <span class="logo-sub">منظومة استعادة وتتبع المركبات</span>
+                </div>
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/index.html" class="active">الرئيسية</a></li>
+                <li><a href="/pages/report_lost.html">🚨 الإبلاغ عن فقدان</a></li>
+                <li><a href="/pages/report_found.html">🔍 الإبلاغ عن عثور</a></li>
+                <li><a href="/pages/my_reports.html">بلاغاتي وإشعاراتي</a></li>
+            </ul>
+            <div class="nav-actions" id="nav-actions">
+                <!-- يُحدث ديناميكياً بواسطة JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section (Automotive & Community Emergency Vibe) -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-pill">
+                <span>🛡️ المنظومة المركزية المعتمدة لحماية ومطابقة بلاغات السيارات</span>
+            </div>
+            <h1>
+                معاً لاستعادة مركبات السودان<br>
+                <span>دقة في المطابقة وحماية للملكية</span>
+            </h1>
+            <p>
+                قاعدة بيانات مركزية موحدة تربط بين فاقدي المركبات والمواطنين الباحثين. فحص آلي فوري يطابق مواصفات السيارة ورقم اللوحة ورقم الشاسيه (الهيكل) لضمان عودة كل مركبة لصاحبها الشرعي بأمان.
+            </p>
+            <div class="hero-buttons">
+                <a href="/pages/report_lost.html" class="btn btn-danger btn-lg">
+                    🚨 تسجيل بلاغ عن سيارة مفقودة
+                </a>
+                <a href="/pages/report_found.html" class="btn btn-accent btn-lg">
+                    🔍 الإبلاغ عن سيارة تم العثور عليها
+                </a>
+            </div>
+
+            <!-- عداد الأثر والإنجازات (Impact Counters) -->
+            <div class="metrics-strip">
+                <div class="metric-card">
+                    <div class="metric-num"><span id="metric-lost">2,480</span>+</div>
+                    <div class="metric-label">مركبة مسجلة مفقودة</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-num"><span id="metric-recovered">915</span>+</div>
+                    <div class="metric-label">مركبة تم رصدها واستعادتها</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-num"><span>100</span>%</div>
+                    <div class="metric-label">مطابقة برقم الشاسيه المنقوش</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-num"><span>18</span> ولاية</div>
+                    <div class="metric-label">تغطية تشاركية واسعة</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section (Automotive Diagnostic Search Console) -->
+    <main class="container">
+        <div class="search-console">
+            <!-- تبويبات نوع البلاغ -->
+            <div class="search-tabs">
+                <button type="button" class="tab-btn active" onclick="setSearchType('all', this)">
+                    🚘 جميع البلاغات
+                </button>
+                <button type="button" class="tab-btn" onclick="setSearchType('lost', this)">
+                    🔴 سيارات مفقودة
+                </button>
+                <button type="button" class="tab-btn" onclick="setSearchType('found', this)">
+                    🟢 سيارات تم العثور عليها
+                </button>
+            </div>
+
+            <form id="search-form" class="search-grid" onsubmit="event.preventDefault(); doLiveSearch(true);">
+                <div class="form-group">
+                    <label>بحث عام (اسم المنطقة، معلم، وصف)</label>
+                    <input type="text" id="search-q" class="form-control" placeholder="مثال: كورولا، شارع الستين، أم درمان...">
+                </div>
+                <div class="form-group">
+                    <label>رقم اللوحة</label>
+                    <input type="text" id="search-plate" class="form-control" placeholder="خ 2 - 45890">
+                </div>
+                <div class="form-group">
+                    <label>رقم الشاسيه (الهيكل)</label>
+                    <input type="text" id="search-chassis" class="form-control" placeholder="VIN / رقم الشاسيه...">
+                </div>
+                <div class="form-group">
+                    <label>الشركة / الماركة</label>
+                    <input type="text" id="search-make" class="form-control" placeholder="تويوتا، هيونداي...">
+                </div>
+                <div class="form-group">
+                    <label>اللون</label>
+                    <input type="text" id="search-color" class="form-control" placeholder="أبيض، رمادي...">
+                </div>
+                <button type="submit" class="btn btn-primary" style="height: 46px; white-space: nowrap;">
+                    بحث فوري ⚡
+                </button>
+            </form>
+        </div>
+
+        <!-- نتائج البحث والحالات المعروضة -->
+        <div style="margin: 45px 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--automotive-navy);">سجل المركبات والبلاغات المعتمدة</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">يتم تحديث ومطابقة البيانات لحظياً بالاعتماد على رقم الشاسيه واللوحة والمواصفات</p>
+            </div>
+            <div id="results-count" class="spec-pill" style="font-size: 0.9rem; padding: 6px 14px; background: #e2e8f0; font-weight: 700;"></div>
+        </div>
+
+        <div id="reports-grid" class="grid">
+            <!-- تحميل بطاقات الهيكل العظمي (Skeleton Loaders) أثناء الجلب -->
+        </div>
+    </main>
+
+    <!-- قسم خطوات العمل التشاركي (How TMC Works - Inspired by Charity & Car Repairs) -->
+    <section class="workflow-section" style="margin-top: 60px;">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">إجراءات العمل الموثوقة</span>
+                <h2 class="section-title">كيف تعمل المنظومة لحماية واستعادة مركبتك؟</h2>
+                <p style="color: var(--text-muted); margin-top: 10px;">
+                    صُمم النظام لضمان أعلى درجات السرعة والموثوقية، وسد الثغرات حتى في حال نزع اللوحات أو تزويرها.
+                </p>
+            </div>
+
+            <div class="workflow-grid">
+                <!-- الخطوة 1 -->
+                <div class="workflow-card">
+                    <span class="workflow-step-num">01</span>
+                    <div class="workflow-icon-wrap">📋</div>
+                    <h3>توثيق البلاغ ورقم الشاسيه</h3>
+                    <p>
+                        يقوم صاحب المركبة أو المبلّغ بإدخال المواصفات الدقيقة مع صور رقم الشاسيه وشهادة البحث لضمان صحة البلاغ وسرعة التعرف عليه.
+                    </p>
+                </div>
+
+                <!-- الخطوة 2 -->
+                <div class="workflow-card">
+                    <span class="workflow-step-num">02</span>
+                    <div class="workflow-icon-wrap" style="background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);">⚡</div>
+                    <h3>محرك الفحص والمطابقة الذكي</h3>
+                    <p>
+                        يقارن النظام آلياً بلاغات الفقدان مع بلاغات العثور، ويكتشف التطابق حتى لو تم نزع اللوحات المعدنية بالاعتماد على الرقم التسلسلي للشاسيه.
+                    </p>
+                </div>
+
+                <!-- الخطوة 3 -->
+                <div class="workflow-card">
+                    <span class="workflow-step-num">03</span>
+                    <div class="workflow-icon-wrap" style="background: linear-gradient(135deg, var(--success-dark) 0%, var(--success) 100%);">🤝</div>
+                    <h3>إشعار فوري واستعادة آمنة</h3>
+                    <p>
+                        يتم إشعار صاحب المركبة فوراً بوجود تطابق محتمل، وتنسيق استلام المركبة وفق آلية التحقق والخصوصية المعتمدة رسمياً في النظام.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Details Modal -->
+    <div id="report-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; padding-bottom: 30px;">
+                <div class="logo">
+                    <span class="logo-badge">TMC</span>
+                    <div class="logo-text">
+                        <span class="logo-title">Track My Car</span>
+                        <span class="logo-sub" style="color: #94a3b8;">المنظومة الوطنية الموحدة لبلاغات المركبات</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <a href="/pages/report_lost.html" class="btn btn-danger btn-sm">تسجيل فقدان</a>
+                    <a href="/pages/report_found.html" class="btn btn-accent btn-sm">إبلاغ عن عثور</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 نظام Track My Car (TMC) - تم بناء المنظومة بالكامل وفق المعايير البرمجية لمشروع التخرج ومتطلبات الفصل الثالث التحليلي.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script>
+        let currentSearchType = 'all';
+
+        function setSearchType(type, btn) {
+            currentSearchType = type;
+            document.querySelectorAll('.search-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            doLiveSearch(true);
+        }
+
+        // عرض بطاقات التحميل الهيكلي (Skeleton Placeholders)
+        function showSkeletons() {
+            const grid = document.getElementById('reports-grid');
+            grid.innerHTML = Array(3).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-shimmer" style="height: 180px; margin-bottom: 15px;"></div>
+                    <div class="skeleton-shimmer" style="height: 24px; width: 70%; margin-bottom: 10px;"></div>
+                    <div class="skeleton-shimmer" style="height: 16px; width: 40%; margin-bottom: 12px;"></div>
+                    <div class="skeleton-shimmer" style="height: 40px; margin-bottom: 10px;"></div>
+                </div>
+            `).join('');
+        }
+
+        // دالة البحث المباشر مع خاصية Debounce
+        async function executeSearch(bypassCache = false) {
+            const q = document.getElementById('search-q').value.trim();
+            const plate = document.getElementById('search-plate').value.trim();
+            const chassis = document.getElementById('search-chassis').value.trim();
+            const make = document.getElementById('search-make').value.trim();
+            const color = document.getElementById('search-color').value.trim();
+
+            const res = await API.searchVehicles({
+                type: currentSearchType,
+                q,
+                plate_number: plate,
+                chassis_number: chassis,
+                make,
+                color
+            }, bypassCache);
+
+            renderReports(res.results || []);
+        }
+
+        // دالة البحث مع التريث التلقائي (300ms)
+        const doLiveSearch = API.debounce((bypassCache = false) => {
+            executeSearch(bypassCache);
+        }, 280);
+
+        function renderReports(reports) {
+            const grid = document.getElementById('reports-grid');
+            const countBox = document.getElementById('results-count');
+            countBox.textContent = `عرض ${reports.length} بلاغ معتمد`;
+
+            if (reports.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 1px dashed var(--card-border);">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🔍</div>
+                        <h3 style="color: var(--automotive-navy); font-weight: 800; margin-bottom: 6px;">لم يتم العثور على مركبات مطابقة</h3>
+                        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px;">
+                            تأكد من رقم اللوحة أو جزء من رقم الشاسيه، أو جرب البحث باسم الشركة المصنعة ولون السيارة فقط.
+                        </p>
+                        <button onclick="clearSearchFilters()" class="btn btn-outline btn-sm">إعادة ضبط البحث</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = reports.map(r => {
+                const isLost = r.report_type === 'lost';
+                const typeBadge = isLost 
+                    ? '<span class="badge badge-lost pulse">🚨 مفقودة عاجلة</span>' 
+                    : '<span class="badge badge-found">🟢 تم العثور عليها</span>';
+                
+                let statusBadge = '';
+                if (r.status === 'يوجد تطابق محتمل') {
+                    statusBadge = '<span class="badge badge-matched">⭐ يوجد تطابق محتمل!</span>';
+                } else if (r.status === 'منشور') {
+                    statusBadge = '<span class="badge badge-published">معتمد</span>';
+                }
+
+                const thumb = r.thumbnail 
+                    ? `<img src="/${r.thumbnail}" alt="صورة المركبة" loading="lazy">` 
+                    : `<div class="no-img"><span>🚗</span><small style="font-size:0.75rem; color:#94a3b8; font-weight:600;">بانتظار صورة</small></div>`;
+
+                const plateHtml = r.plate_number 
+                    ? `<div class="plate-plaque">${r.plate_number}</div>` 
+                    : `<div class="plate-plaque no-plate">بدون لوحات معدنية</div>`;
+
+                const chassisHtml = r.chassis_number 
+                    ? `<span class="spec-pill spec-pill-chassis" title="رقم الشاسيه موثق">VIN: ${r.chassis_number.substring(0, 10)}... ✓</span>` 
+                    : '';
+
+                return `
+                    <div class="vehicle-card">
+                        <div class="vehicle-thumb">
+                            ${thumb}
+                            <div class="vehicle-badge-pos">${typeBadge}</div>
+                        </div>
+                        <div class="vehicle-body">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                                <h3 class="vehicle-title">${r.make || ''} ${r.model || ''}</h3>
+                                ${statusBadge}
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                ${plateHtml}
+                            </div>
+
+                            <div class="vehicle-specs-pills">
+                                <span class="spec-pill">سنة ${r.year || 'غير محدد'}</span>
+                                <span class="spec-pill">اللون: ${r.color || 'غير محدد'}</span>
+                                <span class="spec-pill">${r.vehicle_type || 'صالون'}</span>
+                                ${chassisHtml}
+                            </div>
+
+                            <div class="vehicle-meta">
+                                <span>📍 الموقع:</span> 
+                                <strong>${r.location}</strong>
+                            </div>
+                            <div class="vehicle-meta">
+                                <span>📅 التاريخ:</span> 
+                                <span>${r.report_date}</span>
+                            </div>
+
+                            <p style="font-size:0.9rem; color:var(--text-muted); margin: 10px 0; line-height: 1.5;">
+                                ${r.description ? r.description.substring(0, 75) + '...' : 'لا يوجد وصف إضافي'}
+                            </p>
+
+                            <div class="vehicle-footer">
+                                <span style="font-size:0.8rem; color:var(--text-light); font-weight:700;">بلاغ #${r.report_id}</span>
+                                <button onclick="showDetails('${r.report_type}', ${r.report_id})" class="btn btn-primary btn-sm">عرض التفاصيل والصور</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearSearchFilters() {
+            document.getElementById('search-q').value = '';
+            document.getElementById('search-plate').value = '';
+            document.getElementById('search-chassis').value = '';
+            document.getElementById('search-make').value = '';
+            document.getElementById('search-color').value = '';
+            executeSearch(true);
+        }
+
+        async function showDetails(type, id) {
+            const endpoint = type === 'lost' ? `/api/lost_reports.php?id=${id}` : `/api/found_reports.php?id=${id}`;
+            const res = await (await fetch(endpoint)).json();
+            if (!res.success) {
+                alert('تعذر جلب تفاصيل البلاغ');
+                return;
+            }
+
+            const r = res.report;
+            const isLost = type === 'lost';
+            const modalBody = document.getElementById('modal-body');
+
+            let attachmentsHtml = '';
+            if (r.attachments && r.attachments.length > 0) {
+                attachmentsHtml = `
+                    <h4 style="margin: 20px 0 10px; font-weight: 800; color: var(--automotive-navy);">الصور المرفوعة والمستندات الموثقة:</h4>
+                    <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                        ${r.attachments.map(a => `
+                            <div style="text-align: center;">
+                                <a href="/${a.file_path}" target="_blank">
+                                    <img src="/${a.file_path}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 1.5px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.06);">
+                                </a>
+                                <div style="font-size: 0.78rem; color: var(--primary); font-weight: 800; margin-top: 5px;">${a.attachment_tag || 'صورة'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            modalBody.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #f1f5f9; padding-bottom:14px; margin-bottom:18px;">
+                    <div>
+                        <span class="badge ${isLost ? 'badge-lost' : 'badge-found'}" style="margin-bottom:6px;">${isLost ? 'بلاغ فقدان' : 'بلاغ عثور'}</span>
+                        <h2 style="font-size:1.4rem; font-weight:900; color:var(--automotive-navy);">تفاصيل المركبة #${r.report_id} (${r.make || ''} ${r.model || ''})</h2>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:18px; border-radius:12px; margin-bottom:18px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.95rem;">
+                        <p><strong>المركبة:</strong> ${r.make || ''} ${r.model || ''} (${r.year || ''})</p>
+                        <p><strong>اللون:</strong> ${r.color || 'غير محدد'}</p>
+                        <p><strong>رقم اللوحة:</strong> <span class="plate-plaque" style="font-size:0.85rem; padding:1px 8px;">${r.plate_number || 'بدون لوحة'}</span></p>
+                        <p><strong>رقم الشاسيه (الهيكل):</strong> <span style="font-family:monospace; background:#e2e8f0; padding:2px 8px; border-radius:4px; font-weight:800; color:#0f172a;">${r.chassis_number || 'غير مسجل'}</span></p>
+                        <p><strong>${isLost ? 'آخر موقع شوهدت فيه:' : 'موقع العثور:'}</strong> ${isLost ? r.last_seen_location : r.found_location}</p>
+                        <p><strong>تاريخ البلاغ:</strong> ${isLost ? r.loss_date : r.found_date}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="margin-bottom:8px; font-weight:800; color:var(--automotive-navy);">الوصف التفصيلي والعلامات المميزة:</h4>
+                    <p style="background:#ffffff; border:1px solid #e2e8f0; padding:14px; border-radius:8px; color:#475569; line-height:1.6;">${r.description || 'لا يوجد وصف إضافي.'}</p>
+                </div>
+
+                ${attachmentsHtml}
+
+                <div style="margin-top:24px; padding:16px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; font-size:0.9rem; color:#1e40af;">
+                    <strong>🛡️ ضوابط الأمان والخصوصية:</strong>
+                    بيانات الموقع الدقيق والتواصل المباشر تخضع لآلية المراجعة والتحقق المعتمدة في النظام وفقاً لإجراءات السلامة وحماية الملكية.
+                </div>
+            `;
+
+            document.getElementById('report-modal').style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            document.getElementById('report-modal').style.display = 'none';
+        }
+
+        // ربط الإدخال الحي مع البحث
+        document.addEventListener('DOMContentLoaded', () => {
+            ['search-q', 'search-plate', 'search-chassis', 'search-make', 'search-color'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => doLiveSearch(false));
+                }
+            });
+
+            showSkeletons();
+            executeSearch(false);
+        });
+    </script>
+</body>
+</html>

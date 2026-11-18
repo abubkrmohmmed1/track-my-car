@@ -1,0 +1,954 @@
+/* ============================================================
+   نظام Track My Car (TMC) - التصميم المطور (Automotive & Community Trust)
+   مستوحى من أرقى تصاميم خدمات السيارات ومواقع التكاتف المجتمعي
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    /* باليت ألوان مستوحاة من قطاع السيارات والأمان المجتمعي */
+    --automotive-dark: #0a0e17;
+    --automotive-navy: #0f172a;
+    --automotive-slate: #1e293b;
+    --card-surface: #ffffff;
+    --card-border: #e2e8f0;
+    
+    --primary: #1d4ed8;          /* أزرق الأمان والموثوقية */
+    --primary-hover: #1e40af;
+    --primary-light: #eff6ff;
+    
+    --accent: #f59e0b;           /* أصفر/ذهبي طوارئ سيارات */
+    --accent-dark: #d97706;
+    --accent-light: #fffbeb;
+    
+    --danger: #ef4444;           /* أحمر البلاغات العاجلة */
+    --danger-dark: #dc2626;
+    --danger-light: #fef2f2;
+    
+    --success: #10b981;          /* أخضر الاستعادة والتطابق */
+    --success-dark: #059669;
+    --success-light: #ecfdf5;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-full: 9999px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06);
+    --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.35);
+    
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    direction: rtl;
+    text-align: right;
+    background-color: #f8fafc;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--primary-hover);
+}
+
+.container {
+    width: 92%;
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   شريط التنقل العلوي (Sleek Dark Automotive Navbar)
+   ============================================================ */
+header {
+    background: rgba(10, 14, 23, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: var(--transition);
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 76px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logo-badge {
+    background: linear-gradient(135deg, var(--accent) 0%, #b45309 100%);
+    color: #000;
+    font-weight: 900;
+    font-size: 1.1rem;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+    display: inline-flex;
+    align-items: center;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-title {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.logo-sub {
+    color: var(--text-light);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 8px;
+}
+
+.nav-links a {
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-admin-btn {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.nav-admin-btn:hover {
+    background: var(--danger) !important;
+    color: #ffffff !important;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ============================================================
+   الأزرار (High Impact Automotive Action Buttons)
+   ============================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(29, 78, 216, 0.4);
+    color: #ffffff;
+}
+
+.btn-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: #000;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.btn-accent:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+    color: #000;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45);
+    color: #ffffff;
+}
+
+.btn-secondary {
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
+}
+
+.btn-secondary:hover {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+}
+
+.btn-outline:hover {
+    background: #f1f5f9;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-white {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.btn-outline-white:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+}
+
+.btn-lg {
+    padding: 14px 30px;
+    font-size: 1.05rem;
+}
+
+/* ============================================================
+   الواجهة الرئيسية (Hero Section - Dark Metallic Grid Pattern)
+   ============================================================ */
+.hero {
+    background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0a0e17 80%);
+    color: #ffffff;
+    padding: 70px 0 90px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: var(--accent);
+    padding: 6px 18px;
+    border-radius: var(--radius-full);
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 22px;
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1.25;
+    margin-bottom: 18px;
+    letter-spacing: -0.5px;
+}
+
+.hero h1 span {
+    background: linear-gradient(135deg, #ffffff 40%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    font-size: 1.15rem;
+    color: #94a3b8;
+    margin-bottom: 35px;
+    line-height: 1.8;
+}
+
+.hero-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   شريط عداد الإنجازات والأثر (Charity / Trust Impact Metric Strip)
+   ============================================================ */
+.metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 50px;
+    position: relative;
+    z-index: 2;
+}
+
+.metric-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.metric-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.metric-num {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.metric-num span {
+    color: var(--accent);
+}
+
+.metric-label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* ============================================================
+   منصة البحث المتقدم (Automotive Diagnostic Search Console)
+   ============================================================ */
+.search-console {
+    background: var(--card-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 30px;
+    margin-top: -45px;
+    position: relative;
+    z-index: 10;
+    border: 1px solid var(--card-border);
+}
+
+.search-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tab-btn.active {
+    background: var(--automotive-navy);
+    color: #ffffff;
+}
+
+.tab-btn:hover:not(.active) {
+    background: #f1f5f9;
+    color: var(--text-main);
+}
+
+.search-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr auto;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.form-control {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    background: #ffffff;
+    color: var(--text-main);
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12);
+}
+
+textarea.form-control {
+    height: auto;
+    padding: 12px 14px;
+    min-height: 100px;
+}
+
+/* ============================================================
+   بطاقات المركبات (Sleek Automotive Vehicle Cards)
+   ============================================================ */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+
+.vehicle-card {
+    background: var(--card-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--card-border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: #cbd5e1;
+}
+
+.vehicle-thumb {
+    width: 100%;
+    height: 200px;
+    background: #0f172a;
+    position: relative;
+    overflow: hidden;
+}
+
+.vehicle-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.vehicle-card:hover .vehicle-thumb img {
+    transform: scale(1.05);
+}
+
+.vehicle-thumb .no-img {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #475569;
+    font-size: 2.8rem;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.vehicle-badge-pos {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 3;
+}
+
+/* شارة النمرة الواقعية (Sudanese License Plate Graphic Plaque) */
+.plate-plaque {
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 2px solid #0f172a;
+    border-radius: var(--radius-sm);
+    padding: 3px 12px;
+    font-weight: 900;
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    color: #0f172a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.plate-plaque::before {
+    content: 'SD';
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.65rem;
+    padding: 2px 5px;
+    border-radius: 2px;
+    margin-left: 8px;
+    font-weight: 700;
+}
+
+.plate-plaque.no-plate {
+    border-style: dashed;
+    border-color: #94a3b8;
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+.plate-plaque.no-plate::before {
+    display: none;
+}
+
+.vehicle-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.vehicle-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--automotive-navy);
+    margin-bottom: 8px;
+}
+
+.vehicle-specs-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+}
+
+.spec-pill {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.spec-pill-chassis {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.vehicle-meta {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vehicle-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ============================================================
+   الشارات وحالات البلاغات (Badges)
+   ============================================================ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.badge-lost {
+    background: var(--danger-light);
+    color: var(--danger-dark);
+    border: 1px solid #fecaca;
+}
+
+.badge-found {
+    background: var(--success-light);
+    color: var(--success-dark);
+    border: 1px solid #a7f3d0;
+}
+
+.badge-matched {
+    background: #eff6ff;
+    color: var(--primary);
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.15);
+}
+
+.badge-pending {
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border: 1px solid #fde68a;
+}
+
+.badge-incomplete {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.badge-published {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.pulse {
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.08); opacity: 0.85; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   قسم خطوات العمل (How It Works - Charity / Trust Workflow)
+   ============================================================ */
+.workflow-section {
+    padding: 80px 0;
+    background: #ffffff;
+    border-top: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.section-header {
+    text-align: center;
+    max-width: 650px;
+    margin: 0 auto 50px;
+}
+
+.section-tag {
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.section-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--automotive-navy);
+    line-height: 1.3;
+}
+
+.workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    position: relative;
+}
+
+.workflow-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg);
+    padding: 35px 25px;
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.workflow-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+    background: #ffffff;
+}
+
+.workflow-icon-wrap {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--automotive-navy) 0%, var(--primary) 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.15);
+}
+
+.workflow-step-num {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #cbd5e1;
+}
+
+.workflow-card h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: var(--automotive-navy);
+}
+
+.workflow-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   تأثيرات التحميل المؤقت (High-Perception Skeleton Loading)
+   ============================================================ */
+.skeleton-card {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.skeleton-shimmer {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================================
+   النافذة المنبثقة والتفاصيل (Modal)
+   ============================================================ */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 14, 23, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(6px);
+    padding: 20px;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    position: relative;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #f1f5f9;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #475569;
+    transition: var(--transition);
+}
+
+.modal-close:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+/* بطاقات عامة */
+.card {
+    background: var(--card-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--card-border);
+    padding: 30px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+/* تنبيهات */
+.alert {
+    padding: 14px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-success {
+    background: var(--success-light);
+    color: var(--success-dark);
+    border: 1px solid #a7f3d0;
+}
+
+.alert-danger {
+    background: var(--danger-light);
+    color: var(--danger-dark);
+    border: 1px solid #fecaca;
+}
+
+/* التذييل (Footer) */
+footer {
+    background: var(--automotive-dark);
+    color: #94a3b8;
+    padding: 50px 0 30px;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.88rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .search-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .workflow-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        height: auto;
+        padding: 16px 0;
+        gap: 14px;
+    }
+    .hero h1 {
+        font-size: 2rem;
+    }
+    .search-grid {
+        grid-template-columns: 1fr;
+    }
+    .metrics-strip {
+        grid-template-columns: 1fr 1fr;
+    }
+}

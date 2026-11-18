@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - TMC</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="/index.html" class="logo">
+                <span class="logo-badge">TMC</span>
+                <div class="logo-text">
+                    <span class="logo-title">Track My Car</span>
+                    <span class="logo-sub">منظومة استعادة وتتبع المركبات</span>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <a href="/index.html" class="btn btn-outline btn-sm">الرئيسية</a>
+                <a href="/pages/register.html" class="btn btn-primary btn-sm">حساب جديد</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 480px; margin: 40px auto 60px;">
+        <div class="card">
+            <h2 style="text-align: center; margin-bottom: 8px; color: var(--primary);">تسجيل الدخول</h2>
+            <p style="text-align: center; color: var(--gray-600); margin-bottom: 24px; font-size: 0.95rem;">
+                أدخل بريدك الإلكتروني وكلمة المرور لمتابعة بلاغاتك
+            </p>
+
+            <div id="alert-box" style="display: none;" class="alert"></div>
+
+            <form id="login-form" onsubmit="event.preventDefault(); submitLogin();">
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" class="form-control" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="btn-submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    تسجيل الدخول
+                </button>
+            </form>
+
+            <div style="margin-top: 20px; text-align: center; font-size: 0.9rem;">
+                ليس لديك حساب؟ <a href="/pages/register.html" style="font-weight: 700;">إنشاء حساب جديد</a>
+            </div>
+
+            <hr style="margin: 24px 0; border: none; border-top: 1px dashed var(--gray-200);">
+
+            <!-- صناديق الحسابات التجريبية السريعة للتجربة والاختبار -->
+            <div>
+                <h4 style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 10px; text-align: center;">
+                    ⚡ حسابات تجريبية سريعة للاختبار (كلمة المرور: password123):
+                </h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCreds('admin@tmc.sd', 'password123')">
+                        مدير النظام (Admin)
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCreds('mohammed@example.com', 'password123')">
+                        صاحب سيارة مفقودة (محمد أحمد)
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCreds('osman@example.com', 'password123')">
+                        باحث ومُبلّغ (عثمان علي)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 نظام Track My Car (TMC)</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script>
+        function fillCreds(email, pass) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = pass;
+        }
+
+        async function submitLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const alertBox = document.getElementById('alert-box');
+            const submitBtn = document.getElementById('btn-submit');
+
+            alertBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'جاري التحقق...';
+
+            const res = await API.login(email, password);
+
+            if (res.success) {
+                alertBox.className = 'alert alert-success';
+                alertBox.textContent = 'تم تسجيل الدخول بنجاح! جاري توجيهك...';
+                alertBox.style.display = 'block';
+
+                setTimeout(() => {
+                    if (res.user && res.user.role === 'admin') {
+                        window.location.href = '/pages/admin.html';
+                    } else {
+                        window.location.href = '/pages/my_reports.html';
+                    }
+                }, 800);
+            } else {
+                alertBox.className = 'alert alert-danger';
+                alertBox.textContent = res.error || 'فشل تسجيل الدخول';
+                alertBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'تسجيل الدخول';
+            }
+        }
+    </script>
+</body>
+</html>

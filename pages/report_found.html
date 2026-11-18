@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإبلاغ عن سيارة تم العثور عليها - TMC</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="/index.html" class="logo">
+                <span class="logo-badge">TMC</span>
+                <div class="logo-text">
+                    <span class="logo-title">Track My Car</span>
+                    <span class="logo-sub">منظومة استعادة وتتبع المركبات</span>
+                </div>
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/index.html">الرئيسية</a></li>
+                <li><a href="/pages/report_lost.html">الإبلاغ عن فقدان مركبة</a></li>
+                <li><a href="/pages/report_found.html" class="active">الإبلاغ عن مركبة تم العثور عليها</a></li>
+                <li><a href="/pages/my_reports.html">بلاغاتي وإشعاراتي</a></li>
+            </ul>
+            <div class="nav-actions" id="nav-actions"></div>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 780px; margin: 30px auto 60px;">
+        <div class="card">
+            <div style="border-bottom: 2px solid #ccfbf1; padding-bottom: 12px; margin-bottom: 20px;">
+                <span class="badge badge-found" style="margin-bottom: 6px;">نموذج الباحث أو المُبلّغ</span>
+                <h2 style="color: var(--secondary); font-size: 1.6rem;">الإبلاغ عن سيارة تم العثور عليها</h2>
+                <p style="color: var(--gray-600); font-size: 0.95rem;">
+                    شكراً لحرصك ومساعدتك! أدخل موقع ووصف المركبة المرصودة لمساعدة أصحابها في استعادتها.
+                </p>
+            </div>
+
+            <div id="alert-box" style="display: none;" class="alert"></div>
+
+            <form id="found-form" onsubmit="event.preventDefault(); submitFoundForm();" enctype="multipart/form-data">
+                <!-- 1. موقع وتاريخ العثور -->
+                <h4 style="color: var(--secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span>1.</span> موقع وتاريخ العثور
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="found_location">موقع العثور التقريبي *</label>
+                        <input type="text" id="found_location" name="found_location" class="form-control" placeholder="مثال: أم درمان، الثورة الحارة التاسعة، قرب صيدلية..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="found_date">تاريخ العثور أو الرصد *</label>
+                        <input type="date" id="found_date" name="found_date" class="form-control" required>
+                    </div>
+                </div>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--gray-200);">
+
+                <!-- 2. مواصفات المركبة (تقريبية) -->
+                <h4 style="color: var(--secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span>2.</span> أوصاف المركبة المرصودة (أدخل ما تستطيع التعرف عليه)
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="make">الشركة المصنعة (الماركة إن عُرفت)</label>
+                        <input type="text" id="make" name="make" class="form-control" placeholder="مثال: تويوتا، هيونداي، نيسان">
+                    </div>
+                    <div class="form-group">
+                        <label for="model">الطراز أو الشكل التقريبي</label>
+                        <input type="text" id="model" name="model" class="form-control" placeholder="مثال: كورولا، أكسنت، بوكس دبل كاب">
+                    </div>
+                    <div class="form-group">
+                        <label for="color">اللون الأساسي</label>
+                        <input type="text" id="color" name="color" class="form-control" placeholder="مثال: أبيض، رمادي، أسود">
+                    </div>
+                    <div class="form-group">
+                        <label for="plate_number">رقم اللوحة (إن كان ظاهراً)</label>
+                        <input type="text" id="plate_number" name="plate_number" class="form-control" placeholder="مثال: خ 2 - 45890 (أو اترك فارغاً إذا بدون لوحات)">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="chassis_number">رقم الشاسيه / الهيكل (VIN) <span style="font-size: 0.8rem; color: var(--secondary); font-weight: normal;">(هام جداً إذا كانت السيارة بدون لوحات)</span></label>
+                        <input type="text" id="chassis_number" name="chassis_number" class="form-control" placeholder="يظهر عادة عند قاعدة الزجاج الأمامي من جهة السائق، أو على قائم الباب (مثال: JT2AE20...)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">وصف حالة السيارة وتفاصيل المشاهدة *</label>
+                    <textarea id="description" name="description" class="form-control" placeholder="صف حالة السيارة: هل هي متوقفة منذ فترة؟ هل عليها غبار؟ هل بها أضرار؟ وأي تفاصيل أخرى تساعد في التحقق..." required></textarea>
+                </div>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--gray-200);">
+
+                <!-- 3. صورة المركبة ومكان الشاسيه واللوحة -->
+                <h4 style="color: var(--secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span>3.</span> رفع صور المركبة ومكان الشاسيه واللوحة (اختياري / للتحقق الإضافي)
+                </h4>
+                <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: 16px;">
+                    في كثير من الحالات، يقوم البعض بنزع لوحات السيارات المفقودة، لذا تصوير مكان رقم الشاسيه يساعد النظام في التعرف عليها فوراً:
+                </p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed var(--gray-200);">
+                        <label for="photo_general">📸 صورة عامة للمركبة المعثور عليها</label>
+                        <input type="file" id="photo_general" name="photo_general" class="form-control" accept="image/*">
+                    </div>
+                    <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed var(--gray-200);">
+                        <label for="photo_plate">🔢 صورة اللوحة (إن كانت اللوحات موجودة)</label>
+                        <input type="file" id="photo_plate" name="photo_plate" class="form-control" accept="image/*">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px dashed #86efac;">
+                        <label for="photo_chassis" style="color: #166534; font-weight: 700;">🔍 صورة لمكان رقم الشاسيه / الهيكل (إن أمكن)</label>
+                        <input type="file" id="photo_chassis" name="photo_chassis" class="form-control" accept="image/*">
+                        <small style="color: #15803d; display: block; margin-top: 4px;">يمكنك تصوير الرقم الظاهر أسفل الزجاج الأمامي أو بجانب باب السائق.</small>
+                    </div>
+                    <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed var(--gray-200);">
+                        <label for="attachments">📷 صور إضافية لأي علامات مميزة أخرى</label>
+                        <input type="file" id="attachments" name="attachments[]" class="form-control" multiple accept="image/*">
+                        <small style="color: var(--gray-600); display: block; margin-top: 4px;">يمكنك رفع عدة صور إضافية إذا رغبت.</small>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-submit" class="btn btn-secondary" style="width: 100%; padding: 12px; font-size: 1.05rem;">
+                    إرسال بلاغ العثور 🔍
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 نظام Track My Car (TMC)</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await API.getCurrentUser();
+            if (!user) {
+                alert('يجب تسجيل الدخول أولاً لتسجيل بلاغ العثور');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+            document.getElementById('found_date').value = new Date().toISOString().split('T')[0];
+        });
+
+        async function submitFoundForm() {
+            const form = document.getElementById('found-form');
+            const alertBox = document.getElementById('alert-box');
+            const submitBtn = document.getElementById('btn-submit');
+
+            alertBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'جاري إرسال البلاغ...';
+
+            const formData = new FormData(form);
+            const res = await API.submitFoundReport(formData);
+
+            if (res.success) {
+                alertBox.className = 'alert alert-success';
+                alertBox.innerHTML = `
+                    <strong>${res.message}</strong><br>
+                    رقم بلاغ العثور: <strong>#${res.report_id}</strong> | الحالة: <span class="badge badge-pending">${res.status}</span><br>
+                    جاري توجيهك إلى صفحة بلاغاتك...
+                `;
+                alertBox.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = '/pages/my_reports.html';
+                }, 1500);
+            } else {
+                alertBox.className = 'alert alert-danger';
+                alertBox.textContent = res.error || 'فشل إرسال البلاغ';
+                alertBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'إرسال بلاغ العثور 🔍';
+            }
+        }
+    </script>
+</body>
+</html>

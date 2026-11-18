@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بلاغاتي وإشعاراتي - TMC</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="/index.html" class="logo">
+                <span class="logo-badge">TMC</span>
+                <div class="logo-text">
+                    <span class="logo-title">Track My Car</span>
+                    <span class="logo-sub">منظومة استعادة وتتبع المركبات</span>
+                </div>
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/index.html">الرئيسية</a></li>
+                <li><a href="/pages/report_lost.html">الإبلاغ عن فقدان مركبة</a></li>
+                <li><a href="/pages/report_found.html">الإبلاغ عن مركبة تم العثور عليها</a></li>
+                <li><a href="/pages/my_reports.html" class="active">بلاغاتي وإشعاراتي</a></li>
+            </ul>
+            <div class="nav-actions" id="nav-actions"></div>
+        </div>
+    </header>
+
+    <main class="container" style="margin: 30px auto 60px;">
+        <!-- بطاقة الإشعارات والتنبيهات -->
+        <div class="card" style="border-right: 4px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                    🔔 صندوق الإشعارات والتنبيهات
+                    <span id="unread-count-badge" class="badge badge-lost" style="display:none;">0 جديد</span>
+                </h3>
+                <button onclick="markAllNotifications()" class="btn btn-outline btn-sm">تعليم الكل كمقروء ✓</button>
+            </div>
+            <div id="notifications-list">
+                <p style="color: var(--gray-400);">جاري فحص الإشعارات...</p>
+            </div>
+        </div>
+
+        <!-- تبويبات البلاغات -->
+        <div style="margin: 30px 0 15px; display: flex; gap: 10px;">
+            <button id="tab-lost" onclick="switchTab('lost')" class="btn btn-primary">
+                🚨 بلاغات الفقدان الخاصة بي (<span id="count-lost">0</span>)
+            </button>
+            <button id="tab-found" onclick="switchTab('found')" class="btn btn-outline">
+                🔍 بلاغات العثور التي سجلتها (<span id="count-found">0</span>)
+            </button>
+        </div>
+
+        <!-- قائمة بلاغات الفقدان -->
+        <div id="lost-container" class="grid">
+            <div style="grid-column: 1/-1; text-align: center; padding: 30px;">جاري تحميل بلاغات الفقدان...</div>
+        </div>
+
+        <!-- قائمة بلاغات العثور -->
+        <div id="found-container" class="grid" style="display: none;">
+            <div style="grid-column: 1/-1; text-align: center; padding: 30px;">جاري تحميل بلاغات العثور...</div>
+        </div>
+    </main>
+
+    <!-- Details Modal -->
+    <div id="report-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 نظام Track My Car (TMC)</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = await API.getCurrentUser();
+            if (!currentUser) {
+                alert('يجب تسجيل الدخول لعرض هذه الصفحة');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+
+            loadNotifications();
+            loadMyReports();
+        });
+
+        async function loadNotifications() {
+            const res = await API.getNotifications();
+            const container = document.getElementById('notifications-list');
+            const unreadBadge = document.getElementById('unread-count-badge');
+
+            if (res.unread_count > 0) {
+                unreadBadge.textContent = `${res.unread_count} جديد`;
+                unreadBadge.style.display = 'inline-block';
+            } else {
+                unreadBadge.style.display = 'none';
+            }
+
+            if (!res.notifications || res.notifications.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-600); font-size:0.95rem;">لا توجد إشعارات جديدة حتى الآن.</p>';
+                return;
+            }
+
+            container.innerHTML = res.notifications.map(n => `
+                <div style="background: ${n.is_read ? '#f8fafc' : '#eff6ff'}; border: 1px solid ${n.is_read ? '#e2e8f0' : '#bfdbfe'}; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.95rem; color: var(--dark);">${n.message}</div>
+                        <div style="font-size: 0.8rem; color: var(--gray-400); margin-top: 4px;">📅 ${n.send_date}</div>
+                    </div>
+                    ${!n.is_read ? '<span class="badge badge-lost" style="font-size:0.75rem;">جديد</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        async function markAllNotifications() {
+            await API.markNotificationsAsRead();
+            loadNotifications();
+        }
+
+        async function loadMyReports() {
+            // 1. بلاغات الفقدان
+            const resLost = await (await fetch('/api/lost_reports.php?my=1')).json();
+            const lostReports = resLost.reports || [];
+            document.getElementById('count-lost').textContent = lostReports.length;
+
+            const lostGrid = document.getElementById('lost-container');
+            if (lostReports.length === 0) {
+                lostGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: white; border-radius: 12px;">
+                        <p style="color: var(--gray-600);">لم تقم بتسجيل أي بلاغ فقدان حتى الآن.</p>
+                        <a href="/pages/report_lost.html" class="btn btn-primary btn-sm" style="margin-top:12px;">تسجيل بلاغ فقدان الآن</a>
+                    </div>
+                `;
+            } else {
+                lostGrid.innerHTML = renderReportCards(lostReports, 'lost');
+            }
+
+            // 2. بلاغات العثور
+            const resFound = await (await fetch('/api/found_reports.php?my=1')).json();
+            const foundReports = resFound.reports || [];
+            document.getElementById('count-found').textContent = foundReports.length;
+
+            const foundGrid = document.getElementById('found-container');
+            if (foundReports.length === 0) {
+                foundGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: white; border-radius: 12px;">
+                        <p style="color: var(--gray-600);">لم تسجل أي بلاغ عن سيارة تم العثور عليها.</p>
+                        <a href="/pages/report_found.html" class="btn btn-secondary btn-sm" style="margin-top:12px;">الإبلاغ عن سيارة عثرت عليها</a>
+                    </div>
+                `;
+            } else {
+                foundGrid.innerHTML = renderReportCards(foundReports, 'found');
+            }
+        }
+
+        function renderReportCards(reports, type) {
+            return reports.map(r => {
+                let statusBadge = '';
+                if (r.status === 'قيد المراجعة') statusBadge = '<span class="badge badge-pending">قيد المراجعة</span>';
+                else if (r.status === 'منشور') statusBadge = '<span class="badge badge-published">منشور للجمهور</span>';
+                else if (r.status === 'يوجد تطابق محتمل') statusBadge = '<span class="badge badge-matched">⭐ يوجد تطابق محتمل!</span>';
+                else if (r.status === 'يتطلب استكمال البيانات') statusBadge = '<span class="badge badge-incomplete">⚠️ يتطلب استكمال بيانات</span>';
+                else statusBadge = `<span class="badge badge-closed">${r.status}</span>`;
+
+                const thumb = r.thumbnail ? `<img src="/${r.thumbnail}">` : `<div class="no-img">🚗</div>`;
+
+                return `
+                    <div class="vehicle-card">
+                        <div class="vehicle-thumb">
+                            ${thumb}
+                            <div class="vehicle-badge-pos">${statusBadge}</div>
+                        </div>
+                        <div class="vehicle-body">
+                            <h3 class="vehicle-title">${r.make || ''} ${r.model || ''} (${r.year || ''})</h3>
+                            <div class="vehicle-plate">${r.plate_number || 'بدون لوحة'}</div>
+                            <div class="vehicle-meta">
+                                <span>📍 الموقع:</span> 
+                                <strong>${r.last_seen_location || r.found_location}</strong>
+                            </div>
+                            <div class="vehicle-meta">
+                                <span>📅 التاريخ:</span> 
+                                <span>${r.loss_date || r.found_date}</span>
+                            </div>
+                            <div class="vehicle-footer">
+                                <span style="font-size:0.8rem; color:var(--gray-400);">رقم البلاغ #${r.report_id}</span>
+                                <button onclick="showDetails('${type}', ${r.report_id})" class="btn btn-outline btn-sm">عرض التفاصيل</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchTab(tab) {
+            const lostBtn = document.getElementById('tab-lost');
+            const foundBtn = document.getElementById('tab-found');
+            const lostGrid = document.getElementById('lost-container');
+            const foundGrid = document.getElementById('found-container');
+
+            if (tab === 'lost') {
+                lostBtn.className = 'btn btn-primary';
+                foundBtn.className = 'btn btn-outline';
+                lostGrid.style.display = 'grid';
+                foundGrid.style.display = 'none';
+            } else {
+                lostBtn.className = 'btn btn-outline';
+                foundBtn.className = 'btn btn-primary';
+                lostGrid.style.display = 'none';
+                foundGrid.style.display = 'grid';
+            }
+        }
+
+        async function showDetails(type, id) {
+            const endpoint = type === 'lost' ? `/api/lost_reports.php?id=${id}` : `/api/found_reports.php?id=${id}`;
+            const res = await (await fetch(endpoint)).json();
+            if (!res.success) return alert('تعذر جلب تفاصيل البلاغ');
+
+            const r = res.report;
+            const isLost = type === 'lost';
+            const modalBody = document.getElementById('modal-body');
+
+            let attachmentsHtml = '';
+            if (r.attachments && r.attachments.length > 0) {
+                attachmentsHtml = `
+                    <h4 style="margin: 15px 0 8px;">الصور والمرفقات:</h4>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        ${r.attachments.map(a => `
+                            <div style="text-align: center;">
+                                <a href="/${a.file_path}" target="_blank">
+                                    <img src="/${a.file_path}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                                </a>
+                                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-top: 4px;">${a.attachment_tag || 'مرفق'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            modalBody.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:15px;">
+                    <h2 style="font-size:1.3rem;">تفاصيل البلاغ #${r.report_id}</h2>
+                    <span class="badge ${r.status === 'يوجد تطابق محتمل' ? 'badge-matched' : 'badge-pending'}">${r.status}</span>
+                </div>
+                <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:15px;">
+                    <p><strong>المركبة:</strong> ${r.make || ''} - ${r.model || ''} (${r.year || ''}) - اللون: ${r.color || ''}</p>
+                    <p><strong>رقم اللوحة:</strong> <span class="vehicle-plate" style="margin:0 5px;">${r.plate_number || 'بدون لوحة'}</span></p>
+                    <p><strong>رقم الشاسيه / الهيكل:</strong> <span style="font-family:monospace; background:#e2e8f0; padding:2px 8px; border-radius:4px; font-weight:700;">${r.chassis_number || 'غير مسجل'}</span></p>
+                    <p><strong>${isLost ? 'آخر موقع شوهدت فيه:' : 'موقع العثور:'}</strong> ${isLost ? r.last_seen_location : r.found_location}</p>
+                    <p><strong>تاريخ البلاغ:</strong> ${isLost ? r.loss_date : r.found_date}</p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:6px;">الوصف:</h4>
+                    <p style="background:#fff; border:1px solid #eee; padding:10px; border-radius:6px; color:#475569; line-height:1.5;">${r.description || 'لا يوجد وصف إضافي.'}</p>
+                </div>
+                ${attachmentsHtml}
+            `;
+            document.getElementById('report-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('report-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

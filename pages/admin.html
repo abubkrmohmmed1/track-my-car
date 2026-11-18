@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم مدير النظام - TMC Admin</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .admin-stat-card {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border-left: 4px solid var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .admin-stat-num {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 6px 0;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+        .admin-table th, .admin-table td {
+            padding: 12px 14px;
+            text-align: right;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .admin-table th {
+            background: #f8fafc;
+            color: var(--gray-600);
+            font-weight: 700;
+        }
+        .match-box {
+            background: #f0fdf4;
+            border: 2px dashed #86efac;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="/index.html" class="logo">
+                <span class="logo-badge" style="background: var(--danger); color: #fff;">ADMIN</span>
+                <div class="logo-text">
+                    <span class="logo-title">Track My Car</span>
+                    <span class="logo-sub">لوحة الإدارة والمطابقة</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/index.html">واجهة الموقع</a></li>
+                <li><a href="/pages/admin.html" class="active">لوحة الإدارة</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button onclick="API.logout()" class="btn btn-outline btn-sm">تسجيل الخروج</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="margin: 30px auto 60px;">
+        <!-- بطاقات الإحصائيات -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <div class="admin-stat-card" style="border-left-color: var(--danger);">
+                <div style="color: var(--gray-600); font-weight: 600;">بلاغات الفقدان</div>
+                <div id="stat-lost" class="admin-stat-num">-</div>
+            </div>
+            <div class="admin-stat-card" style="border-left-color: var(--secondary);">
+                <div style="color: var(--gray-600); font-weight: 600;">بلاغات العثور</div>
+                <div id="stat-found" class="admin-stat-num">-</div>
+            </div>
+            <div class="admin-stat-card" style="border-left-color: var(--accent);">
+                <div style="color: var(--gray-600); font-weight: 600;">قيد المراجعة</div>
+                <div id="stat-pending" class="admin-stat-num">-</div>
+            </div>
+            <div class="admin-stat-card" style="border-left-color: var(--primary);">
+                <div style="color: var(--gray-600); font-weight: 600;">حالات تطابق مؤكدة</div>
+                <div id="stat-matched" class="admin-stat-num">-</div>
+            </div>
+            <div class="admin-stat-card" style="border-left-color: var(--dark);">
+                <div style="color: var(--gray-600); font-weight: 600;">المستخدمين المسجلين</div>
+                <div id="stat-users" class="admin-stat-num">-</div>
+            </div>
+        </div>
+
+        <!-- أزرار التبويبات -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button id="tab-btn-pending" onclick="switchAdminTab('pending')" class="btn btn-primary">
+                📋 مراجعة البلاغات والتحقق منها
+            </button>
+            <button id="tab-btn-matching" onclick="switchAdminTab('matching')" class="btn btn-outline">
+                ⚡ محرك فحص ومطابقة البلاغات
+            </button>
+            <button id="tab-btn-users" onclick="switchAdminTab('users')" class="btn btn-outline">
+                👥 إدارة المستخدمين
+            </button>
+        </div>
+
+        <!-- 1. قسم مراجعة البلاغات -->
+        <div id="sec-pending" class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-weight: 700; color: var(--primary);">قائمة البلاغات للمراجعة والاعتماد</h3>
+                <div style="display: flex; gap: 8px;">
+                    <select id="filter-status" onchange="loadAdminReports()" class="form-control" style="width: auto;">
+                        <option value="">جميع الحالات</option>
+                        <option value="قيد المراجعة">قيد المراجعة</option>
+                        <option value="منشور">منشور</option>
+                        <option value="يوجد تطابق محتمل">يوجد تطابق محتمل</option>
+                        <option value="يتطلب استكمال البيانات">يتطلب استكمال البيانات</option>
+                        <option value="مغلق">مغلق</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>رقم</th>
+                            <th>النوع</th>
+                            <th>المركبة</th>
+                            <th>رقم اللوحة</th>
+                            <th>الموقع والتاريخ</th>
+                            <th>مقدم البلاغ</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-table-body">
+                        <tr><td colspan="8" style="text-align: center;">جاري تحميل البلاغات...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. قسم محرك المطابقة -->
+        <div id="sec-matching" class="card" style="display: none;">
+            <h3 style="color: var(--primary); margin-bottom: 10px;">⚡ محرك الفحص والمطابقة الآلي للمركبات</h3>
+            <p style="color: var(--gray-600); margin-bottom: 20px;">
+                يقوم النظام بمقارنة بيانات المركبة المفقودة (اللوحة، الشركة، الطراز، اللون، سنة الصنع) مع جميع بلاغات العثور المسجلة وتحديد نسبة التطابق.
+            </p>
+
+            <div class="form-group" style="max-width: 450px;">
+                <label for="match-lost-select">اختر بلاغ فقدان لفحصه ومطابقته:</label>
+                <div style="display: flex; gap: 8px;">
+                    <select id="match-lost-select" class="form-control">
+                        <option value="">اختر بلاغاً...</option>
+                    </select>
+                    <button onclick="runMatchingEngine()" class="btn btn-primary" style="white-space: nowrap;">فحص التطابقات 🔍</button>
+                </div>
+            </div>
+
+            <div id="matching-results-area" style="margin-top: 25px;">
+                <!-- تعرض النتائج هنا -->
+            </div>
+        </div>
+
+        <!-- 3. قسم إدارة المستخدمين -->
+        <div id="sec-users" class="card" style="display: none;">
+            <h3 style="color: var(--primary); margin-bottom: 15px;">👥 قائمة المستخدمين المسجلين في النظام</h3>
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>المعرف</th>
+                            <th>الاسم الكامل</th>
+                            <th>رقم الهاتف</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>نوع الحساب</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>بلاغات الفقدان</th>
+                            <th>بلاغات العثور</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr><td colspan="8" style="text-align: center;">جاري تحميل المستخدمين...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal تحديث حالة البلاغ -->
+    <div id="status-modal" class="modal-overlay" onclick="closeStatusModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeStatusModal()">&times;</button>
+            <h3 style="margin-bottom: 15px; color: var(--primary);">تحديث حالة البلاغ وإشعار المستخدم</h3>
+            
+            <form id="status-form" onsubmit="event.preventDefault(); submitStatusUpdate();">
+                <input type="hidden" id="modal-report-type">
+                <input type="hidden" id="modal-report-id">
+
+                <div class="form-group">
+                    <label>الحالة الجديدة *</label>
+                    <select id="modal-status-select" class="form-control" required>
+                        <option value="منشور">منشور للعامة (بيانات مكتملة ومعتمدة)</option>
+                        <option value="يوجد تطابق محتمل">يوجد تطابق محتمل</option>
+                        <option value="يتطلب استكمال البيانات">يتطلب استكمال البيانات (بيانات ناقصة)</option>
+                        <option value="قيد المراجعة">إعادة إلى قيد المراجعة</option>
+                        <option value="مغلق">إغلاق البلاغ (تم الحل أو ملغي)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>ملاحظة للمستخدم (ستصل له في الإشعار) *</label>
+                    <textarea id="modal-notes" class="form-control" placeholder="اكتب ملاحظاتك، مثل: تم اعتماد بلاغك، أو يرجى تزويدنا بصورة إثبات الملكية ورقم اللوحة..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ التغيير وإرسال الإشعار</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 نظام Track My Car (TMC) - لوحة الإدارة</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script>
+        let adminReportsList = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await API.getCurrentUser();
+            if (!user || user.role !== 'admin') {
+                alert('عذراً: هذه اللوحة مخصصة لمدير النظام فقط.');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+
+            loadAdminStats();
+            loadAdminReports();
+        });
+
+        async function loadAdminStats() {
+            const res = await (await fetch('/api/admin.php?action=stats')).json();
+            if (res.success) {
+                const s = res.stats;
+                document.getElementById('stat-lost').textContent = s.total_lost;
+                document.getElementById('stat-found').textContent = s.total_found;
+                document.getElementById('stat-pending').textContent = s.total_pending;
+                document.getElementById('stat-matched').textContent = s.matched;
+                document.getElementById('stat-users').textContent = s.total_users;
+            }
+        }
+
+        async function loadAdminReports() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const res = await (await fetch(`/api/admin.php?action=reports&status=${encodeURIComponent(statusFilter)}`)).json();
+            const tbody = document.getElementById('reports-table-body');
+            const selectLost = document.getElementById('match-lost-select');
+
+            if (!res.success || !res.reports || res.reports.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">لا توجد بلاغات تطابق الفلتر الحالي.</td></tr>';
+                return;
+            }
+
+            adminReportsList = res.reports;
+
+            // تحديث قائمة البلاغات لفحص المطابقة
+            selectLost.innerHTML = '<option value="">اختر بلاغ فقدان...</option>';
+            res.reports.filter(r => r.report_type === 'lost').forEach(r => {
+                selectLost.innerHTML += `<option value="${r.report_id}">بلاغ #${r.report_id}: ${r.make} ${r.model} (${r.plate_number || 'بدون لوحة'}) - ${r.reporter_name}</option>`;
+            });
+
+            tbody.innerHTML = res.reports.map(r => {
+                const isLost = r.report_type === 'lost';
+                const typeBadge = isLost 
+                    ? '<span class="badge badge-lost">فقدان</span>' 
+                    : '<span class="badge badge-found">عثور</span>';
+
+                let statusBadge = '';
+                if (r.status === 'قيد المراجعة') statusBadge = '<span class="badge badge-pending">قيد المراجعة</span>';
+                else if (r.status === 'منشور') statusBadge = '<span class="badge badge-published">منشور</span>';
+                else if (r.status === 'يوجد تطابق محتمل') statusBadge = '<span class="badge badge-matched">⭐ تطابق محتمل</span>';
+                else if (r.status === 'يتطلب استكمال البيانات') statusBadge = '<span class="badge badge-incomplete">استكمال بيانات</span>';
+                else statusBadge = `<span class="badge badge-closed">${r.status}</span>`;
+
+                return `
+                    <tr>
+                        <td><strong>#${r.report_id}</strong></td>
+                        <td>${typeBadge}</td>
+                        <td>
+                            <strong>${r.make || ''} ${r.model || ''}</strong> (${r.color || ''} - ${r.year || ''})
+                            ${r.chassis_number ? `<br><small style="color:var(--gray-600); font-family:monospace;">شاسيه: ${r.chassis_number}</small>` : ''}
+                        </td>
+                        <td><span class="vehicle-plate" style="font-size:0.85rem;">${r.plate_number || 'بدون لوحة'}</span></td>
+                        <td>
+                            <div style="font-size:0.85rem;">${r.location}</div>
+                            <div style="font-size:0.75rem; color:var(--gray-400);">${r.report_date}</div>
+                        </td>
+                        <td>
+                            <div>${r.reporter_name}</div>
+                            <small style="color:var(--gray-600);">${r.reporter_phone}</small>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button onclick="openStatusModal('${r.report_type}', ${r.report_id}, '${r.status}')" class="btn btn-outline btn-sm">
+                                ✏️ تعديل الحالة
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function switchAdminTab(tab) {
+            document.getElementById('sec-pending').style.display = tab === 'pending' ? 'block' : 'none';
+            document.getElementById('sec-matching').style.display = tab === 'matching' ? 'block' : 'none';
+            document.getElementById('sec-users').style.display = tab === 'users' ? 'block' : 'none';
+
+            document.getElementById('tab-btn-pending').className = tab === 'pending' ? 'btn btn-primary' : 'btn btn-outline';
+            document.getElementById('tab-btn-matching').className = tab === 'matching' ? 'btn btn-primary' : 'btn btn-outline';
+            document.getElementById('tab-btn-users').className = tab === 'users' ? 'btn btn-primary' : 'btn btn-outline';
+
+            if (tab === 'users') {
+                loadUsersList();
+            }
+        }
+
+        async function loadUsersList() {
+            const res = await (await fetch('/api/admin.php?action=users')).json();
+            const tbody = document.getElementById('users-table-body');
+            if (res.success && res.users) {
+                tbody.innerHTML = res.users.map(u => `
+                    <tr>
+                        <td>#${u.user_id}</td>
+                        <td><strong>${u.full_name}</strong></td>
+                        <td>${u.phone_number}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'badge-lost' : 'badge-published'}">${u.role}</span></td>
+                        <td>${u.created_at}</td>
+                        <td>${u.lost_count}</td>
+                        <td>${u.found_count}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function openStatusModal(type, id, currentStatus) {
+            document.getElementById('modal-report-type').value = type;
+            document.getElementById('modal-report-id').value = id;
+            document.getElementById('modal-status-select').value = currentStatus;
+            document.getElementById('modal-notes').value = '';
+            document.getElementById('status-modal').style.display = 'flex';
+        }
+
+        function closeStatusModal(e) {
+            document.getElementById('status-modal').style.display = 'none';
+        }
+
+        async function submitStatusUpdate() {
+            const type = document.getElementById('modal-report-type').value;
+            const id = document.getElementById('modal-report-id').value;
+            const status = document.getElementById('modal-status-select').value;
+            const notes = document.getElementById('modal-notes').value;
+
+            const formData = new FormData();
+            formData.append('action', 'update_status');
+            formData.append('report_type', type);
+            formData.append('report_id', id);
+            formData.append('status', status);
+            formData.append('notes', notes);
+
+            const res = await (await fetch('/api/admin.php?action=update_status', {
+                method: 'POST',
+                body: formData
+            })).json();
+
+            if (res.success) {
+                alert(res.message);
+                closeStatusModal();
+                loadAdminReports();
+                loadAdminStats();
+            } else {
+                alert(res.error || 'فشل تحديث الحالة');
+            }
+        }
+
+        async function runMatchingEngine() {
+            const lostId = document.getElementById('match-lost-select').value;
+            if (!lostId) {
+                alert('يرجى اختيار بلاغ فقدان أولاً');
+                return;
+            }
+
+            const resultsArea = document.getElementById('matching-results-area');
+            resultsArea.innerHTML = '<p>جاري تشغيل محرك الفحص والمطابقة في قاعدة البيانات...</p>';
+
+            const res = await (await fetch(`/api/admin.php?action=find_matches&lost_report_id=${lostId}`)).json();
+
+            if (!res.success) {
+                resultsArea.innerHTML = `<div class="alert alert-danger">${res.error}</div>`;
+                return;
+            }
+
+            const lost = res.lost_report;
+            const candidates = res.candidates || [];
+
+            let html = `
+                <div style="background:#f1f5f9; padding:15px; border-radius:8px; margin-bottom:20px;">
+                    <h4 style="color:var(--danger); margin-bottom:6px;">المركبة المفقودة المستهدفة (بلاغ #${lost.report_id}):</h4>
+                    <p><strong>المركبة:</strong> ${lost.make} ${lost.model} (${lost.year}) - اللون: ${lost.color} - اللوحة: <span class="vehicle-plate">${lost.plate_number || 'بدون'}</span></p>
+                    <p><strong>رقم الشاسيه:</strong> <span style="font-family:monospace; background:#e2e8f0; padding:2px 8px; border-radius:4px; font-weight:700;">${lost.chassis_number || 'غير مسجل'}</span></p>
+                    <p><strong>آخر موقع:</strong> ${lost.last_seen_location} | <strong>تاريخ الفقد:</strong> ${lost.loss_date}</p>
+                </div>
+            `;
+
+            if (candidates.length === 0) {
+                html += `
+                    <div style="background:white; border:1px solid #e2e8f0; padding:30px; text-align:center; border-radius:8px;">
+                        <h4>لم يتم العثور على أي تطابقات محتملة حالياً في بلاغات العثور</h4>
+                        <p style="color:var(--gray-400);">سيقوم النظام بتنبيهك بمجرد تسجيل أي بلاغ عثور يطابق مواصفات هذه السيارة أو رقم شاسيها.</p>
+                    </div>
+                `;
+            } else {
+                html += `<h4 style="margin-bottom:12px; color:var(--success);">تم العثور على (${candidates.length}) سيارة مرشحة للمطابقة:</h4>`;
+                html += candidates.map(c => {
+                    let photosHtml = '';
+                    if (c.attachments && c.attachments.length > 0) {
+                        photosHtml = `
+                            <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                                ${c.attachments.map(att => `
+                                    <div style="text-align:center;">
+                                        <a href="/${att.file_path}" target="_blank">
+                                            <img src="/${att.file_path}" style="width:80px; height:80px; object-fit:cover; border-radius:6px; border:1px solid #ccc;">
+                                        </a>
+                                        <div style="font-size:0.7rem; color:var(--gray-600);">${att.attachment_tag || 'صورة'}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="match-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <div>
+                                    <span class="badge badge-found" style="font-size:0.9rem;">بلاغ عثور رقم #${c.report_id}</span>
+                                    <span class="badge badge-matched" style="font-size:0.9rem; margin-right:8px;">نسبة التطابق: ${c.match_score}%</span>
+                                </div>
+                                <button onclick="confirmMatch(${lost.report_id}, ${c.report_id})" class="btn btn-primary btn-sm" style="background-color:var(--success);">
+                                    اعتماد التطابق وإشعار الطرفين ✓
+                                </button>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; background:white; padding:12px; border-radius:6px; margin-bottom:10px;">
+                                <div>
+                                    <p><strong>المركبة المعثور عليها:</strong> ${c.make || 'غير محدد'} ${c.model || ''} - اللون: ${c.color || 'غير محدد'}</p>
+                                    <p><strong>رقم اللوحة:</strong> <span class="vehicle-plate">${c.plate_number || 'بدون لوحة (قد تكون منزوعة)'}</span></p>
+                                    <p><strong>رقم الشاسيه:</strong> <span style="font-family:monospace; background:#e2e8f0; padding:2px 8px; border-radius:4px; font-weight:700;">${c.chassis_number || 'غير مسجل'}</span></p>
+                                    <p><strong>موقع العثور:</strong> ${c.found_location}</p>
+                                </div>
+                                <div>
+                                    <p><strong>مقدم البلاغ (الباحث):</strong> ${c.finder_name} (${c.finder_phone})</p>
+                                    <p><strong>تاريخ العثور:</strong> ${c.found_date}</p>
+                                    <p><strong>الوصف:</strong> ${c.description}</p>
+                                </div>
+                            </div>
+                            <div style="font-size:0.85rem; color:#15803d; margin-bottom:6px;">
+                                <strong>عوامل التطابق المحسوبة:</strong> ${c.match_reasons.join(' • ')}
+                            </div>
+                            ${photosHtml}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            resultsArea.innerHTML = html;
+        }
+
+        async function confirmMatch(lostId, foundId) {
+            if (!confirm(`هل أنت متأكد من اعتماد التطابق بين بلاغ الفقد #${lostId} وبلاغ العثور #${foundId}؟ سيتم إرسال إشعارات فورية لصاحب السيارة والمبلّغ.`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'confirm_match');
+            formData.append('lost_report_id', lostId);
+            formData.append('found_report_id', foundId);
+
+            const res = await (await fetch('/api/admin.php?action=confirm_match', {
+                method: 'POST',
+                body: formData
+            })).json();
+
+            if (res.success) {
+                alert(res.message);
+                runMatchingEngine();
+                loadAdminReports();
+                loadAdminStats();
+            } else {
+                alert(res.error || 'فشل تأكيد التطابق');
+            }
+        }
+    </script>
+</body>
+</html>
